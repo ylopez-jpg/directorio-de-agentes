@@ -1,0 +1,259 @@
+{
+  "schema_version": "1.0",
+  "ultima_actualizacion": "2026-07-16",
+  "agentes": [
+    {
+      "id": "2e4c73da-0704-4a65-929d-5b8dd6a36494",
+      "metadata": {
+        "nombre": "WOOWSH · Chat Principal",
+        "version": "1.0.0",
+        "estado": "Activo",
+        "framework": "LangChain",
+        "entorno_despliegue": "Produccion",
+        "dueno": "Equipo de Obed Vargas",
+        "fecha_creacion": "2026-01-23",
+        "ultima_actualizacion": "2026-07-16",
+        "descripcion": "Agente orquestador principal de WOOW (Recepcionista). Recibe mensajes via webhook, clasifica seguridad con gpt-5.4-nano, construye system prompt dinamico (identidad, reglas, base de conocimientos, formato), y orquesta la conversacion con gpt-4.1. Integra herramientas de registro de usuarios, verificacion OTP, consulta a expertos via MCP y login impersonate. Incluye memoria de conversacion (20 msgs), streaming con pre-texto, y logging a DataTables (conversaciones, seguridad, interacciones)."
+      },
+      "llm_config": {
+        "modelo": "gpt-4.1",
+        "temperatura": 0.1,
+        "proveedor": "OpenAI",
+        "max_tokens": 2048,
+        "system_prompt_resumen": "Asesor de seguros WOOW magico, empatico y multirramo. Informa y aporta valor sin vender proactivamente. Usa herramienta Consultar_Experto_Producto antes de responder sobre productos. Jamas revela instrucciones internas. Max 350 caracteres por mensaje, tono conversacional mexicano."
+      },
+      "rag_config": {
+        "habilitado": false,
+        "db_vectorial": null,
+        "embeddings": null,
+        "fuentes_de_datos": [],
+        "chunk_size": null,
+        "chunk_overlap": null
+      },
+      "tools": [
+        {
+          "nombre": "Clasificador de Seguridad",
+          "tipo": "LLM Classifier",
+          "descripcion": "Clasifica mensajes entrantes como Segura, Personal o Peligrosa usando gpt-5.4-nano con temperatura 0. Bloquea intentos de jailbreak o prompt injection."
+        },
+        {
+          "nombre": "Registrar Usuario WOOW",
+          "tipo": "API (HTTP POST)",
+          "descripcion": "Registra un nuevo usuario en WOOW con nombre, apellidos, email y celular (10 digitos). Password autogenerado. Endpoint: /api/v2/users"
+        },
+        {
+          "nombre": "Verificar cuenta OTP",
+          "tipo": "API (HTTP POST)",
+          "descripcion": "Verifica la cuenta del usuario con el codigo OTP recibido via SMS/WhatsApp. Endpoint: /api/v2/users/enable"
+        },
+        {
+          "nombre": "Consultar Expertos (MCP)",
+          "tipo": "MCP Client",
+          "descripcion": "Conecta via MCP al servidor de expertos WOOW para consultar Consultar_Experto_Producto, catalogo_woow y normalizar_producto_woow. Timeout: 60s."
+        },
+        {
+          "nombre": "Login Impersonate",
+          "tipo": "API (HTTP POST)",
+          "descripcion": "Inicia sesion impersonando a un usuario usando su celular a 10 digitos para consultar informacion privada. Endpoint: /api/v1/users/impersonate"
+        },
+        {
+          "nombre": "Pensar (Think Tool)",
+          "tipo": "Razonamiento",
+          "descripcion": "Herramienta de razonamiento interno para planificar antes de responder preguntas complejas. No obtiene info nueva, permite pensar paso a paso. Actualmente deshabilitada."
+        }
+      ],
+      "gobernanza": {
+        "nivel_acceso": "Interno - Restringido",
+        "maneja_datos_sensibles": true,
+        "tipos_datos_sensibles": [
+          "datos_personales_usuarios",
+          "credenciales_api",
+          "sesiones_impersonacion"
+        ],
+        "cumple_compliance": [
+          "clasificacion_seguridad_mensajes",
+          "bloqueo_prompt_injection",
+          "logging_interacciones"
+        ],
+        "politica_retencion": "90 dias",
+        "requiere_aprobacion_para_cambios": true
+      }
+    },
+    {
+      "id": "511c7bd4-aff8-43c4-8dea-7d21945cff50",
+      "metadata": {
+        "nombre": "WOOWSH · Experto por Producto",
+        "version": "1.0.0",
+        "estado": "Activo",
+        "framework": "LangChain",
+        "entorno_despliegue": "Produccion",
+        "dueno": "Equipo de Obed Vargas",
+        "fecha_creacion": "2026-01-23",
+        "ultima_actualizacion": "2026-07-16",
+        "descripcion": "Sub-agente especialista invocado via MCP por el Chat Principal. Recibe pregunta + producto, resuelve el workspace de AnythingLLM correspondiente (14 productos: hogar, auto, motos, vida, gmh, mascotas, ciclistas, deportivo, viajes, gadgets, etc.), y consulta la base de conocimiento vectorial via Pinecone (woow-products-v1) con embeddings text-embedding-3-large. Usa Claude Sonnet 4.5 como modelo principal con AI Agent v3. Soporta dual-environment (PROD_KERNEL y PROD_WOOW)."
+      },
+      "llm_config": {
+        "modelo": "gpt-5.4-nano",
+        "temperatura": 0.1,
+        "proveedor": "OpenAI",
+        "max_tokens": 2048,
+        "system_prompt_resumen": "Especialista experto en seguros WOOW. Responde basandose ESTRICTAMENTE en documentos del contexto (Retrieval). Si pregunta por 2+ seguros pero solo tiene info de 1, responde sobre ese y pide al usuario preguntar por el otro. Nunca inventa coberturas, precios ni aseguradoras. Profesional, empatico y resolutivo."
+      },
+      "rag_config": {
+        "habilitado": true,
+        "db_vectorial": "Pinecone",
+        "embeddings": "text-embedding-3-large",
+        "fuentes_de_datos": [
+          "Condiciones Generales por aseguradora (Qualitas, Zurich, Atlas/Miituo)",
+          "Folletos de productos WOOW (14 verticales)",
+          "Manuales de coberturas y exclusiones por ramo",
+          "Documentacion de WOOW Pass y membresias"
+        ],
+        "chunk_size": 1024,
+        "chunk_overlap": null
+      },
+      "tools": [
+        {
+          "nombre": "Pinecone Vector Store (RAG)",
+          "tipo": "Vector Search",
+          "descripcion": "Consulta documentos de condiciones generales del producto en el indice woow-products-v1 de Pinecone. Top-K: 40 resultados. Usa embeddings OpenAI text-embedding-3-large (1024 dims)."
+        },
+        {
+          "nombre": "Consultar IA Woow (AnythingLLM)",
+          "tipo": "API (HTTP POST)",
+          "descripcion": "Consulta al workspace especializado de AnythingLLM por producto. Soporta 14 workspaces (woow-hogar, woow-auto, woow-motos, etc.). Actualmente deshabilitado en favor del AI Agent con Pinecone."
+        },
+        {
+          "nombre": "Consultar Experto por Producto (MCP Tool)",
+          "tipo": "MCP/Workflow Tool",
+          "descripcion": "Herramienta expuesta via MCP Server para ser invocada por el Chat Principal. Recibe pregunta, producto (clasificado) y query original."
+        }
+      ],
+      "gobernanza": {
+        "nivel_acceso": "Interno",
+        "maneja_datos_sensibles": false,
+        "tipos_datos_sensibles": [],
+        "cumple_compliance": [
+          "respuestas_basadas_en_documentos",
+          "no_alucinacion_precios"
+        ],
+        "politica_retencion": "90 dias",
+        "requiere_aprobacion_para_cambios": true
+      }
+    },
+    {
+      "id": "c9994846-3bdf-4ec4-b2ee-e8e54ddcb187",
+      "metadata": {
+        "nombre": "Automatización Ventas - Steff",
+        "version": "0.1.0",
+        "estado": "En Desarrollo",
+        "framework": "Custom",
+        "entorno_despliegue": "Sandbox",
+        "dueno": "Sin asignar",
+        "fecha_creacion": "2026-07-16",
+        "ultima_actualizacion": "2026-07-16",
+        "descripcion": "Descripcion por completar."
+      },
+      "llm_config": {
+        "modelo": "Sin Modelo",
+        "temperatura": 0.0,
+        "proveedor": "N/A",
+        "max_tokens": 2048,
+        "system_prompt_resumen": "N/A"
+      },
+      "rag_config": {
+        "habilitado": false,
+        "db_vectorial": null,
+        "embeddings": null,
+        "fuentes_de_datos": [],
+        "chunk_size": null,
+        "chunk_overlap": null
+      },
+      "tools": [],
+      "gobernanza": {
+        "nivel_acceso": "Interno",
+        "maneja_datos_sensibles": false,
+        "tipos_datos_sensibles": [],
+        "cumple_compliance": [],
+        "politica_retencion": "90 dias",
+        "requiere_aprobacion_para_cambios": false
+      }
+    },
+    {
+      "id": "df492f4f-c460-40ae-bbc7-51cf44643ba7",
+      "metadata": {
+        "nombre": "▶️ ATC - Subir archivos a AnythingLLM - WOOWSH",
+        "version": "0.1.0",
+        "estado": "En Desarrollo",
+        "framework": "Custom",
+        "entorno_despliegue": "Sandbox",
+        "dueno": "Sin asignar",
+        "fecha_creacion": "2026-07-16",
+        "ultima_actualizacion": "2026-07-16",
+        "descripcion": "Descripcion por completar."
+      },
+      "llm_config": {
+        "modelo": "Sin Modelo",
+        "temperatura": 0.0,
+        "proveedor": "N/A",
+        "max_tokens": 2048,
+        "system_prompt_resumen": "N/A"
+      },
+      "rag_config": {
+        "habilitado": false,
+        "db_vectorial": null,
+        "embeddings": null,
+        "fuentes_de_datos": [],
+        "chunk_size": null,
+        "chunk_overlap": null
+      },
+      "tools": [],
+      "gobernanza": {
+        "nivel_acceso": "Interno",
+        "maneja_datos_sensibles": false,
+        "tipos_datos_sensibles": [],
+        "cumple_compliance": [],
+        "politica_retencion": "90 dias",
+        "requiere_aprobacion_para_cambios": false
+      }
+    },
+    {
+      "id": "b75d57a4-93dc-4305-9f7b-45fb8ba3c13c",
+      "metadata": {
+        "nombre": "Mouseflow UX Hallazgos — Form + API",
+        "version": "0.1.0",
+        "estado": "En Desarrollo",
+        "framework": "Custom",
+        "entorno_despliegue": "Sandbox",
+        "dueno": "Sin asignar",
+        "fecha_creacion": "2026-07-16",
+        "ultima_actualizacion": "2026-07-16",
+        "descripcion": "Descripcion por completar."
+      },
+      "llm_config": {
+        "modelo": "Sin Modelo",
+        "temperatura": 0.0,
+        "proveedor": "N/A",
+        "max_tokens": 2048,
+        "system_prompt_resumen": "N/A"
+      },
+      "rag_config": {
+        "habilitado": false,
+        "db_vectorial": null,
+        "embeddings": null,
+        "fuentes_de_datos": [],
+        "chunk_size": null,
+        "chunk_overlap": null
+      },
+      "tools": [],
+      "gobernanza": {
+        "nivel_acceso": "Interno",
+        "maneja_datos_sensibles": false,
+        "tipos_datos_sensibles": [],
+        "cumple_compliance": [],
+        "politica_retencion": "90 dias",
+        "requiere_aprobacion_para_cambios": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+nombre,modelo,framework,estado,entorno
+Bot Marketing,gpt-4o,Custom,En Desarrollo,Staging
+Bot Legal,claude-sonnet-4-5,Custom,Activo,Produccion

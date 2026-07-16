@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Chip body -->
+  <rect x="25" y="25" width="50" height="50" rx="8" ry="8"/>
+  
+  <!-- AI text -->
+  <text x="50" y="58" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="22" fill="currentColor" stroke="none">AI</text>
+  
+  <!-- Top pins -->
+  <line x1="38" y1="25" x2="38" y2="10"/>
+  <line x1="50" y1="25" x2="50" y2="5"/>
+  <line x1="62" y1="25" x2="62" y2="10"/>
+  
+  <!-- Bottom pins -->
+  <line x1="38" y1="75" x2="38" y2="90"/>
+  <line x1="50" y1="75" x2="50" y2="95"/>
+  <line x1="62" y1="75" x2="62" y2="90"/>
+  
+  <!-- Left pins -->
+  <line x1="25" y1="38" x2="10" y2="38"/>
+  <line x1="25" y1="50" x2="5" y2="50"/>
+  <line x1="25" y1="62" x2="10" y2="62"/>
+  
+  <!-- Right pins -->
+  <line x1="75" y1="38" x2="90" y2="38"/>
+  <line x1="75" y1="50" x2="95" y2="50"/>
+  <line x1="75" y1="62" x2="90" y2="62"/>
+  
+  <!-- Pin dots -->
+  <circle cx="38" cy="10" r="3" fill="currentColor"/>
+  <circle cx="62" cy="10" r="3" fill="currentColor"/>
+  <circle cx="38" cy="90" r="3" fill="currentColor"/>
+  <circle cx="62" cy="90" r="3" fill="currentColor"/>
+  <circle cx="10" cy="38" r="3" fill="currentColor"/>
+  <circle cx="10" cy="62" r="3" fill="currentColor"/>
+  <circle cx="90" cy="38" r="3" fill="currentColor"/>
+  <circle cx="90" cy="62" r="3" fill="currentColor"/>
+</svg>

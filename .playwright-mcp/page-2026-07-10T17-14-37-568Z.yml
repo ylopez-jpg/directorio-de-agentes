@@ -1,0 +1,128 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link " Archivero de Agentes AI Dashboard de Gobernanza" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 
+        - generic [ref=e7]:
+          - generic [ref=e8]: Archivero de Agentes AI
+          - generic [ref=e9]: Dashboard de Gobernanza
+      - generic [ref=e10]:
+        - generic [ref=e11]: 
+        - generic [ref=e12]: Reporte Ejecutivo
+  - main [ref=e13]:
+    - generic [ref=e14]:
+      - heading "Visión General de Gobernanza" [level=1] [ref=e15]
+      - paragraph [ref=e16]: Inventario consolidado de agentes de IA en la organización.
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - generic [ref=e20]: Total Agentes
+          - generic [ref=e21]: "3"
+          - generic [ref=e22]: 2 activos · 1 en desarrollo
+        - generic [ref=e24]: 
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - generic [ref=e27]: Modelo Más Usado
+          - generic [ref=e28]: gpt-4o-mini
+          - generic [ref=e29]: "Frameworks: LangChain"
+        - generic [ref=e31]: 
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - generic [ref=e34]: Datos Sensibles
+          - generic [ref=e35]: "2"
+          - generic [ref=e36]: agentes manejan PII o info crítica
+        - generic [ref=e38]: 
+    - generic [ref=e39]:
+      - generic [ref=e41]: Distribución por Framework
+      - generic [ref=e45]: Distribución por Proveedor LLM
+      - generic [ref=e49]: Estado y Entorno
+    - generic [ref=e52]:
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - heading "Inventario de Agentes" [level=2] [ref=e55]
+          - paragraph [ref=e56]: Listado completo con estado, modelo y entorno.
+        - generic [ref=e57]:
+          - generic [ref=e58]: 
+          - text: Ordenado por nombre
+      - table [ref=e60]:
+        - rowgroup [ref=e61]:
+          - row "Agente Dueño Modelo Framework Estado Entorno Versión Acción" [ref=e62]:
+            - columnheader "Agente" [ref=e63]
+            - columnheader "Dueño" [ref=e64]
+            - columnheader "Modelo" [ref=e65]
+            - columnheader "Framework" [ref=e66]
+            - columnheader "Estado" [ref=e67]
+            - columnheader "Entorno" [ref=e68]
+            - columnheader "Versión" [ref=e69]
+            - columnheader "Acción" [ref=e70]
+        - rowgroup [ref=e71]:
+          - row "Asistente de Soporte Tecnico 24/7 Chatbot de primera linea que resuelve dudas frecuentes de clientes sobre productos, gestiona tickets simples y escala a humanos cuando la consulta es compleja. Opera 24/7 en web y WhatsApp. Equipo de Customer Success gpt-4o-mini LangChain Activo  Producción v2.3.0 Ver detalle " [ref=e72]:
+            - cell "Asistente de Soporte Tecnico 24/7 Chatbot de primera linea que resuelve dudas frecuentes de clientes sobre productos, gestiona tickets simples y escala a humanos cuando la consulta es compleja. Opera 24/7 en web y WhatsApp." [ref=e73]:
+              - link "Asistente de Soporte Tecnico 24/7" [ref=e74] [cursor=pointer]:
+                - /url: /agentes/a1f4c2d8-7b3e-4a91-9d2f-1c5e8b9a4f12
+              - generic [ref=e75]: Chatbot de primera linea que resuelve dudas frecuentes de clientes sobre productos, gestiona tickets simples y escala a humanos cuando la consulta es compleja. Opera 24/7 en web y WhatsApp.
+            - cell "Equipo de Customer Success" [ref=e76]
+            - cell "gpt-4o-mini" [ref=e77]:
+              - generic [ref=e78]: gpt-4o-mini
+            - cell "LangChain" [ref=e79]
+            - cell "Activo" [ref=e80]:
+              - generic [ref=e81]: Activo
+            - cell " Producción" [ref=e83]:
+              - generic [ref=e84]:
+                - generic [ref=e85]: 
+                - text: Producción
+            - cell "v2.3.0" [ref=e86]
+            - cell "Ver detalle " [ref=e87]:
+              - link "Ver detalle " [ref=e88] [cursor=pointer]:
+                - /url: /agentes/a1f4c2d8-7b3e-4a91-9d2f-1c5e8b9a4f12
+                - text: Ver detalle
+                - generic [ref=e89]: 
+          - row "Analista Financiero Senior Agente interno que analiza reportes financieros trimestrales, detecta anomalias en gastos, genera resumenes ejecutivos y responde preguntas sobre KPIs. Usado por el equipo financiero y la direccion. Direccion Financiera claude-sonnet-4-5 Custom Activo  Producción v1.8.2 Ver detalle " [ref=e90]:
+            - cell "Analista Financiero Senior Agente interno que analiza reportes financieros trimestrales, detecta anomalias en gastos, genera resumenes ejecutivos y responde preguntas sobre KPIs. Usado por el equipo financiero y la direccion." [ref=e91]:
+              - link "Analista Financiero Senior" [ref=e92] [cursor=pointer]:
+                - /url: /agentes/b8e3a5f1-2c9d-4e67-8a3b-5f7d1c2e9a34
+              - generic [ref=e93]: Agente interno que analiza reportes financieros trimestrales, detecta anomalias en gastos, genera resumenes ejecutivos y responde preguntas sobre KPIs. Usado por el equipo financiero y la direccion.
+            - cell "Direccion Financiera" [ref=e94]
+            - cell "claude-sonnet-4-5" [ref=e95]:
+              - generic [ref=e96]: claude-sonnet-4-5
+            - cell "Custom" [ref=e97]
+            - cell "Activo" [ref=e98]:
+              - generic [ref=e99]: Activo
+            - cell " Producción" [ref=e101]:
+              - generic [ref=e102]:
+                - generic [ref=e103]: 
+                - text: Producción
+            - cell "v1.8.2" [ref=e104]
+            - cell "Ver detalle " [ref=e105]:
+              - link "Ver detalle " [ref=e106] [cursor=pointer]:
+                - /url: /agentes/b8e3a5f1-2c9d-4e67-8a3b-5f7d1c2e9a34
+                - text: Ver detalle
+                - generic [ref=e107]: 
+          - row "Onboarding Buddy RRHH Acompana a nuevos empleados durante sus primeras 4 semanas. Responde dudas sobre beneficios, procesos internos, herramientas, y agenda sesiones con mentores. En fase beta con 3 empleados piloto. Equipo de People & Culture gpt-4o LangChain  En Desarrollo  Staging v0.9.0-beta Ver detalle " [ref=e108]:
+            - cell "Onboarding Buddy RRHH Acompana a nuevos empleados durante sus primeras 4 semanas. Responde dudas sobre beneficios, procesos internos, herramientas, y agenda sesiones con mentores. En fase beta con 3 empleados piloto." [ref=e109]:
+              - link "Onboarding Buddy RRHH" [ref=e110] [cursor=pointer]:
+                - /url: /agentes/c7d2b9e3-5a1f-4c89-9e2d-7b8c1f3a5d62
+              - generic [ref=e111]: Acompana a nuevos empleados durante sus primeras 4 semanas. Responde dudas sobre beneficios, procesos internos, herramientas, y agenda sesiones con mentores. En fase beta con 3 empleados piloto.
+            - cell "Equipo de People & Culture" [ref=e112]
+            - cell "gpt-4o" [ref=e113]:
+              - generic [ref=e114]: gpt-4o
+            - cell "LangChain" [ref=e115]
+            - cell " En Desarrollo" [ref=e116]:
+              - generic [ref=e117]:
+                - generic [ref=e118]: 
+                - text: En Desarrollo
+            - cell " Staging" [ref=e119]:
+              - generic [ref=e120]:
+                - generic [ref=e121]: 
+                - text: Staging
+            - cell "v0.9.0-beta" [ref=e122]
+            - cell "Ver detalle " [ref=e123]:
+              - link "Ver detalle " [ref=e124] [cursor=pointer]:
+                - /url: /agentes/c7d2b9e3-5a1f-4c89-9e2d-7b8c1f3a5d62
+                - text: Ver detalle
+                - generic [ref=e125]: 
+  - contentinfo [ref=e126]:
+    - generic [ref=e127]:
+      - generic [ref=e128]: Archivero de Agentes AI · v1.0.0
+      - generic [ref=e129]: Para reportes ejecutivos y tecnicos

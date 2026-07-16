@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+
+{% block title %}Agentes de IA · Equipo de Obed Vargas{% endblock %}
+
+{% macro badge_estado(estado) %}
+  {% if estado == "Activo" %}<span class="badge-estado inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> Activo</span>
+  {% elif estado == "En Desarrollo" %}<span class="badge-estado inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20"><i class="fa-solid fa-flask text-[10px]"></i> En Desarrollo</span>
+  {% elif estado == "En Pausa" %}<span class="badge-estado inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/5 text-zinc-400 border border-white/10"><i class="fa-solid fa-pause text-[10px]"></i> En Pausa</span>
+  {% else %}<span class="badge-estado inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20"><i class="fa-solid fa-archive text-[10px]"></i> Deprecado</span>{% endif %}
+{% endmacro %}
+
+{% macro badge_modelo(modelo) %}
+  {% set color = {"gpt-4o": "bg-violet-500/10 text-violet-400 border-violet-500/20", "gpt-4o-mini": "bg-violet-500/10 text-violet-400 border-violet-500/20", "claude-sonnet-4-5": "bg-orange-500/10 text-orange-400 border-orange-500/20", "claude-opus-4-5": "bg-orange-500/10 text-orange-400 border-orange-500/20", "claude-haiku-4-5": "bg-orange-500/10 text-orange-400 border-orange-500/20", "Sin Modelo": "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"}.get(modelo, "bg-sky-500/10 text-sky-400 border-sky-500/20") %}
+  <span class="badge-modelo inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-semibold border {{ color }}">{{ modelo }}</span>
+{% endmacro %}
+
+{% macro badge_entorno(entorno) %}
+  {% if entorno == "Produccion" %}<span class="badge-entorno inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"><i class="fa-solid fa-bolt text-[10px]"></i> Producción</span>
+  {% elif entorno == "Staging" %}<span class="badge-entorno inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"><i class="fa-solid fa-vial text-[10px]"></i> Staging</span>
+  {% elif entorno == "Desarrollo" %}<span class="badge-entorno inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-teal-500/10 text-teal-400 border border-teal-500/20"><i class="fa-solid fa-code text-[10px]"></i> Desarrollo</span>
+  {% else %}<span class="badge-entorno inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-white/5 text-zinc-400 border border-white/10"><i class="fa-solid fa-cube text-[10px]"></i> Sandbox</span>{% endif %}
+{% endmacro %}
+
+{% block content %}
+<div id="staging-bar" class="bg-[#09090b]/80 backdrop-blur-md border-b border-white/5 sticky top-[73px] z-20 mb-8 rounded-b-2xl shadow-xl">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-end gap-2 flex-wrap">
+    <button onclick="abrirImportar()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white transition-colors">
+      <i class="fa-solid fa-file-import"></i> Importar WF
+    </button>
+    <button onclick="agregarFila()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white transition-colors">
+      <i class="fa-solid fa-plus"></i> Nuevo Agente
+    </button>
+    <button hx-post="/api/staging/descartar" hx-swap="none" hx-on::after-request="setTimeout(() => location.reload(), 200)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/5 border border-white/10 text-zinc-400 hover:bg-rose-500/20 hover:text-rose-400 hover:border-rose-500/30 transition-colors">
+      <i class="fa-solid fa-rotate-left"></i> Descartar
+    </button>
+    <button hx-post="/api/staging/publicar" hx-swap="none" hx-on::after-request="setTimeout(() => location.reload(), 200)" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-zinc-100 text-zinc-900 hover:bg-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all">
+      <i class="fa-solid fa-cloud-arrow-up"></i> Publicar
+    </button>
+  </div>
+</div>
+<div class="mb-14 mt-8 text-center">
+  <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-500 mb-4">Agentes de IA</h1>
+  <p class="text-lg md:text-xl text-zinc-400 font-medium tracking-wide">Equipo de Obed Vargas</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="glass-panel rounded-2xl p-6 flex items-start justify-between group hover:bg-white/[0.05] transition-colors cursor-default">
+    <div>
+      <div class="text-xs font-semibold uppercase tracking-widest text-zinc-500">Total Agentes</div>
+      <div class="text-5xl font-bold text-zinc-100 mt-2 tracking-tight">{{ stats.total }}</div>
+      <div class="text-xs text-zinc-400 mt-3"><span class="text-emerald-400 font-semibold">{{ stats.activos }} activos</span> · {{ stats.en_desarrollo }} en desarrollo</div>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-layer-group"></i></div>
+  </div>
+  <div class="glass-panel rounded-2xl p-6 flex items-start justify-between group hover:bg-white/[0.05] transition-colors cursor-default">
+    <div>
+      <div class="text-xs font-semibold uppercase tracking-widest text-zinc-500">Modelo Más Usado</div>
+      <div class="text-2xl font-bold text-zinc-100 mt-3 font-mono break-all">{{ stats.modelo_top }}</div>
+      <div class="text-xs text-zinc-400 mt-3">Framework top: <span class="font-semibold text-zinc-300">{{ stats.framework_top }}</span></div>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-microchip"></i></div>
+  </div>
+  <div class="glass-panel rounded-2xl p-6 flex items-start justify-between group hover:bg-white/[0.05] transition-colors cursor-default">
+    <div>
+      <div class="text-xs font-semibold uppercase tracking-widest text-zinc-500">Datos Sensibles</div>
+      <div class="text-5xl font-bold text-zinc-100 mt-2 tracking-tight">{{ stats.datos_sensibles }}</div>
+      <div class="text-xs text-zinc-400 mt-3">agentes manejan PII o info crítica</div>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-shield-halved"></i></div>
+  </div>
+</div>
+
+<div class="glass-panel rounded-2xl overflow-hidden shadow-2xl">
+  <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+    <div>
+      <h2 class="font-bold text-zinc-100 text-lg">Directorio de Agentes</h2>
+      <p class="text-xs text-zinc-500 mt-1">Click en las celdas para edición rápida. Usa el botón &lt;/&gt; para editar la configuración completa.</p>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto scrollbar-thin">
+    <table class="w-full text-sm" id="tabla-agentes">
+      <thead class="bg-white/[0.02] text-zinc-400 uppercase text-xs tracking-wider border-b border-white/10">
+        <tr>
+          <th class="text-center px-4 py-4 font-semibold w-12">#</th>
+          <th class="text-left px-6 py-4 font-semibold min-w-[220px]">Agente</th>
+          <th class="text-left px-6 py-4 font-semibold min-w-[140px]">Supervisa</th>
+          <th class="text-left px-6 py-4 font-semibold min-w-[160px]">Modelo</th>
+          <th class="text-left px-6 py-4 font-semibold min-w-[120px]">Programa</th>
+          <th class="text-left px-6 py-4 font-semibold min-w-[140px]">Estado</th>
+          <th class="text-left px-6 py-4 font-semibold min-w-[130px]">Entorno</th>
+          <th class="text-left px-6 py-4 font-semibold min-w-[80px]">Ver.</th>
+          <th class="text-right px-6 py-4 font-semibold">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-white/5" id="tbody-agentes">
+        {% for agente in agentes %}
+        {% set md = agente.metadata %}
+        {% set llm = agente.llm_config %}
+        <tr id="fila-{{ agente.id }}" class="hover:bg-white/[0.03] transition-colors group"
+            data-agente-id="{{ agente.id }}"
+            data-nombre="{{ md.nombre|e }}"
+            data-dueno="{{ md.dueno|e }}"
+            data-modelo="{{ llm.modelo|e }}"
+            data-framework="{{ md.framework|e }}"
+            data-estado="{{ md.estado|e }}"
+            data-entorno="{{ md.entorno_despliegue|e }}"
+            data-version="{{ md.version|e }}"
+            data-temperatura="{{ llm.temperatura }}">
+          <td class="px-4 py-4 text-center text-zinc-500 font-mono text-xs">{{ loop.index }}</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center text-zinc-400 text-xs shrink-0"><i class="fa-solid fa-robot"></i></div>
+              <div class="min-w-0">
+                <a href="/agentes/{{ agente.id }}" class="font-semibold text-zinc-200 hover:text-white truncate block" title="Ver detalle">
+                  <span class="cell-texto" data-campo="metadata.nombre">{{ md.nombre }}</span>
+                </a>
+                <input class="cell-input hidden w-full text-sm font-semibold bg-zinc-900 border border-brand-500 rounded px-2 py-1 text-white focus:outline-none" data-campo="metadata.nombre" value="{{ md.nombre|e }}">
+                <div class="cell-display group/desc mt-0.5" data-campo="metadata.descripcion" data-valor="{{ md.descripcion|e }}">
+                  <div class="text-xs text-zinc-500 line-clamp-1 cell-texto group-hover/desc:text-zinc-400 cursor-text" title="{{ md.descripcion|e }}">{{ md.descripcion }}</div>
+                  <input class="cell-input hidden w-full bg-zinc-900 border border-brand-500 rounded px-2 py-1 text-zinc-400 text-xs focus:outline-none mt-1" data-campo="metadata.descripcion" value="{{ md.descripcion|e }}">
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 cell-display text-zinc-300" data-campo="metadata.dueno" data-valor='{{ md.dueno|e }}'>
+            <span class="cell-texto">{{ md.dueno }}</span>
+            <input class="cell-input hidden w-full bg-zinc-900 border border-brand-500 rounded px-2 py-1 text-white text-xs focus:outline-none" data-campo="metadata.dueno" value="{{ md.dueno|e }}">
+          </td>
+          <td class="px-6 py-4 cell-display" data-campo="llm_config.modelo" data-valor='{{ llm.modelo|e }}'>
+            <span class="cell-texto">{{ badge_modelo(llm.modelo)|safe }}</span>
+            <input class="cell-input hidden w-full bg-zinc-900 border border-brand-500 rounded px-2 py-1 text-white font-mono text-xs focus:outline-none" data-campo="llm_config.modelo" value="{{ llm.modelo|e }}">
+          </td>
+          <td class="px-6 py-4 cell-display text-zinc-300" data-campo="metadata.framework" data-valor='{{ md.framework|e }}'>
+            <span class="cell-texto">{{ md.framework }}</span>
+            <input class="cell-input hidden w-full bg-zinc-900 border border-brand-500 rounded px-2 py-1 text-white text-xs focus:outline-none" data-campo="metadata.framework" value="{{ md.framework|e }}">
+          </td>
+          <td class="px-6 py-4 cell-display" data-campo="metadata.estado" data-valor='{{ md.estado|e }}'>
+            <span class="cell-texto">{{ badge_estado(md.estado)|safe }}</span>
+            <select class="cell-input hidden w-full bg-zinc-900 border border-brand-500 rounded px-2 py-1 text-white text-xs focus:outline-none" data-campo="metadata.estado">
+              {% for e in ['Activo', 'En Desarrollo', 'En Pausa', 'Deprecado'] %}
+                <option value="{{ e }}" {% if md.estado == e %}selected{% endif %}>{{ e }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td class="px-6 py-4 cell-display" data-campo="metadata.entorno_despliegue" data-valor='{{ md.entorno_despliegue|e }}'>
+            <span class="cell-texto">{{ badge_entorno(md.entorno_despliegue)|safe }}</span>
+            <select class="cell-input hidden w-full bg-zinc-900 border border-brand-500 rounded px-2 py-1 text-white text-xs focus:outline-none" data-campo="metadata.entorno_despliegue">
+              {% for e in ['Produccion', 'Staging', 'Desarrollo', 'Sandbox'] %}
+                <option value="{{ e }}" {% if md.entorno_despliegue == e %}selected{% endif %}>{{ e }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td class="px-6 py-4 cell-display font-mono text-xs text-zinc-500" data-campo="metadata.version" data-valor='{{ md.version|e }}'>
+            <span class="cell-texto">v{{ md.version }}</span>
+            <input class="cell-input hidden w-full bg-zinc-900 border border-brand-500 rounded px-2 py-1 text-white font-mono text-xs focus:outline-none" data-campo="metadata.version" value="{{ md.version|e }}">
+          </td>
+          <td class="px-6 py-4 text-right">
+            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onclick="abrirEditarJson('{{ agente.id }}')" class="w-7 h-7 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors" title="Edición Avanzada (JSON)">
+                <i class="fa-solid fa-code text-xs"></i>
+              </button>
+              <a href="/agentes/{{ agente.id }}" class="w-7 h-7 rounded-lg bg-brand-500/10 border border-brand-500/20 text-brand-400 hover:text-brand-300 hover:bg-brand-500/20 flex items-center justify-center transition-colors" title="Ver detalle">
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+              </a>
+              <button onclick="eliminarFila('{{ agente.id }}')" class="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 flex items-center justify-center transition-colors" title="Eliminar">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10" class="px-6 py-16 text-center text-zinc-500"><i class="fa-solid fa-inbox text-3xl mb-3 opacity-50"></i><div>No hay agentes. Agrega uno nuevo o importa un Workflow.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Importar WF -->
+<div id="modal-importar" class="hidden fixed inset-0 z-50 bg-[#09090b]/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="glass-panel rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border-white/20">
+    <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+      <div>
+        <h3 class="font-bold text-zinc-100 text-lg">Importar Agentes / Workflows</h3>
+        <p class="text-xs text-zinc-400 mt-1">Sube un JSON de n8n, Langflow, o pega texto libre.</p>
+      </div>
+      <button onclick="cerrarImportar()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-6 flex-1 overflow-y-auto scrollbar-thin">
+      <div class="flex items-center gap-2 mb-4 text-sm p-1 bg-white/5 rounded-xl border border-white/10 w-fit">
+        <button onclick="seleccionarTab('texto')" id="tab-texto" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-white/10 text-white shadow-sm transition-all">Pegar texto</button>
+        <button onclick="seleccionarTab('archivo')" id="tab-archivo" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-all">Subir archivo</button>
+      </div>
+      <div id="panel-texto">
+        <textarea id="importar-texto" rows="8" class="w-full text-sm font-mono bg-zinc-900 border border-white/10 rounded-xl p-4 text-zinc-300 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 focus:outline-none transition-all placeholder:text-zinc-600"
+                  placeholder='JSON de Workflow, CSV, o Texto...'></textarea>
+      </div>
+      <div id="panel-archivo" class="hidden">
+        <div class="border-2 border-dashed border-white/10 rounded-xl p-10 text-center hover:border-brand-500/50 hover:bg-white/[0.02] transition-colors">
+          <i class="fa-solid fa-cloud-arrow-up text-3xl text-zinc-500 mb-3"></i>
+          <input type="file" id="importar-archivo" accept=".csv,.json,.txt,.md" class="block w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer mx-auto">
+        </div>
+      </div>
+      <div id="importar-resultado" class="hidden mt-4 p-4 rounded-xl text-sm font-medium border"></div>
+    </div>
+    <div class="px-6 py-4 border-t border-white/10 flex items-center justify-end gap-3 bg-white/[0.02]">
+      <button onclick="cerrarImportar()" class="px-4 py-2 rounded-xl text-sm font-semibold text-zinc-300 hover:bg-white/5 transition-colors">Cancelar</button>
+      <button onclick="ejecutarImportar()" class="px-5 py-2 rounded-xl text-sm font-bold bg-zinc-100 text-zinc-900 hover:bg-white shadow-glow transition-all">
+        <i class="fa-solid fa-bolt mr-2"></i> Procesar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Editar JSON Avanzado -->
+<div id="modal-editar-json" class="hidden fixed inset-0 z-50 bg-[#09090b]/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="glass-panel rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border-white/20">
+    <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+      <div>
+        <h3 class="font-bold text-zinc-100 text-lg">Edición Avanzada (JSON)</h3>
+        <p class="text-xs text-zinc-400 mt-1">Edita el código fuente del agente. Todos los cambios se aplicarán al instante.</p>
+      </div>
+      <button onclick="cerrarEditarJson()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-6 flex-1 overflow-y-auto scrollbar-thin">
+      <input type="hidden" id="json-agente-id">
+      <textarea id="json-editor" rows="20" class="w-full text-xs font-mono bg-zinc-900 border border-white/10 rounded-xl p-4 text-zinc-300 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 focus:outline-none transition-all"></textarea>
+      <div id="json-error" class="hidden mt-3 p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg text-xs font-mono"></div>
+    </div>
+    <div class="px-6 py-4 border-t border-white/10 flex items-center justify-end gap-3 bg-white/[0.02]">
+      <button onclick="cerrarEditarJson()" class="px-4 py-2 rounded-xl text-sm font-semibold text-zinc-300 hover:bg-white/5 transition-colors">Cancelar</button>
+      <button onclick="guardarJson()" class="px-5 py-2 rounded-xl text-sm font-bold bg-brand-500 text-white hover:bg-brand-400 shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-all">
+        <i class="fa-solid fa-save mr-2"></i> Guardar Cambios
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+<script>
+  const BADGES = {
+    estado: {
+      'Activo':       '<span class="badge-estado inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> Activo</span>',
+      'En Desarrollo':'<span class="badge-estado inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20"><i class="fa-solid fa-flask text-[10px]"></i> En Desarrollo</span>',
+      'En Pausa':     '<span class="badge-estado inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/5 text-zinc-400 border border-white/10"><i class="fa-solid fa-pause text-[10px]"></i> En Pausa</span>',
+      'Deprecado':    '<span class="badge-estado inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20"><i class="fa-solid fa-archive text-[10px]"></i> Deprecado</span>',
+    },
+    entorno: {
+      'Produccion':  '<span class="badge-entorno inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"><i class="fa-solid fa-bolt text-[10px]"></i> Producción</span>',
+      'Staging':     '<span class="badge-entorno inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"><i class="fa-solid fa-vial text-[10px]"></i> Staging</span>',
+      'Desarrollo':  '<span class="badge-entorno inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-teal-500/10 text-teal-400 border border-teal-500/20"><i class="fa-solid fa-code text-[10px]"></i> Desarrollo</span>',
+      'Sandbox':     '<span class="badge-entorno inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-white/5 text-zinc-400 border border-white/10"><i class="fa-solid fa-cube text-[10px]"></i> Sandbox</span>',
+    },
+    modelo: (m) => {
+      const colores = {'gpt-4o':'bg-violet-500/10 text-violet-400 border-violet-500/20','gpt-4o-mini':'bg-violet-500/10 text-violet-400 border-violet-500/20','claude-sonnet-4-5':'bg-orange-500/10 text-orange-400 border-orange-500/20','claude-opus-4-5':'bg-orange-500/10 text-orange-400 border-orange-500/20','claude-haiku-4-5':'bg-orange-500/10 text-orange-400 border-orange-500/20', 'Sin Modelo': 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'};
+      const c = colores[m] || 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+      return `<span class="badge-modelo inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-semibold border ${c}">${m}</span>`;
+    }
+  };
+
+  function iniciarEdicion(event) {
+    const td = event.currentTarget;
+    const texto = td.querySelector('.cell-texto');
+    const input = td.querySelector('.cell-input');
+    if (!input) return;
+    if (texto) texto.style.display = 'none';
+    input.classList.remove('hidden');
+    input.focus();
+    if (input.select) input.select();
+  }
+
+  async function terminarEdicion(input) {
+    const td = input.closest('td');
+    const fila = td.closest('tr');
+    const id = fila.dataset.agenteId;
+    const campo = input.dataset.campo;
+    let valor = input.value;
+    if (input.type === 'number') valor = parseFloat(valor);
+
+    let agenteActual;
+    try {
+      const r = await fetch('/api/agentes/' + id);
+      if (r.ok) {
+        agenteActual = await r.json();
+      } else {
+        alert('Error al obtener datos actuales del agente.');
+        return;
+      }
+    } catch(e) {
+      alert('Error de red al obtener agente.');
+      return;
+    }
+
+    const partes = campo.split('.');
+    if (partes.length === 2) {
+      agenteActual[partes[0]][partes[1]] = valor;
+    } else {
+      agenteActual[campo] = valor;
+    }
+    
+    agenteActual.metadata.ultima_actualizacion = new Date().toISOString().slice(0,10);
+    const payload = agenteActual;
+
+    try {
+      const r = await fetch('/api/staging/agente/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!r.ok) {
+        const t = await r.text();
+        alert('Error al guardar: ' + t);
+        input.classList.add('hidden');
+        if (td.querySelector('.cell-texto')) td.querySelector('.cell-texto').style.display = '';
+        return;
+      }
+      const texto = td.querySelector('.cell-texto');
+      if (texto) {
+        if (campo === 'metadata.estado') texto.innerHTML = BADGES.estado[valor] || valor;
+        else if (campo === 'metadata.entorno_despliegue') texto.innerHTML = BADGES.entorno[valor] || valor;
+        else if (campo === 'llm_config.modelo') texto.innerHTML = BADGES.modelo(valor);
+        else if (campo === 'metadata.version') texto.textContent = 'v' + valor;
+        else texto.textContent = valor;
+        texto.style.display = '';
+        fila.dataset[campo.split('.')[1]] = valor;
+      }
+      input.classList.add('hidden');
+    } catch (e) { alert('Error: ' + e); }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.cell-display').forEach(td => {
+      td.addEventListener('click', iniciarEdicion);
+    });
+    document.querySelectorAll('.cell-input').forEach(input => {
+      const event = input.tagName === 'SELECT' ? 'change' : 'blur';
+      input.addEventListener(event, () => terminarEdicion(input));
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { input.value = input.defaultValue; input.blur(); }
+      });
+    });
+  });
+
+  async function eliminarFila(id) {
+    if (!confirm('¿Eliminar este agente del staging?')) return;
+    const r = await fetch('/api/staging/agente/' + id, { method: 'DELETE' });
+    if (r.ok) {
+      const fila = document.getElementById('fila-' + id);
+      if (fila) fila.remove();
+    } else alert('Error al eliminar');
+  }
+
+  async function agregarFila() {
+    const payload = {
+      metadata: { nombre: 'Nuevo agente', version: '0.1.0', estado: 'En Desarrollo', framework: 'Custom', entorno_despliegue: 'Sandbox', dueno: 'Sin asignar', fecha_creacion: new Date().toISOString().slice(0,10), ultima_actualizacion: new Date().toISOString().slice(0,10), descripcion: 'Descripcion por completar' },
+      llm_config: { modelo: 'gpt-4o-mini', temperatura: 0.3, proveedor: 'OpenAI', max_tokens: 2048, system_prompt_resumen: 'Prompt por definir.' },
+      rag_config: { habilitado: false, fuentes_de_datos: [] },
+      tools: [],
+      gobernanza: { nivel_acceso: 'Interno', maneja_datos_sensibles: false, tipos_datos_sensibles: [], cumple_compliance: [], politica_retencion: '90 dias', requiere_aprobacion_para_cambios: false }
+    };
+    const r = await fetch('/api/staging/agente', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (r.ok) location.reload();
+    else { const d = await r.json(); alert('Error: ' + JSON.stringify(d)); }
+  }
+
+  function abrirImportar() { document.getElementById('modal-importar').classList.remove('hidden'); }
+  function cerrarImportar() { document.getElementById('modal-importar').classList.add('hidden'); document.getElementById('importar-resultado').classList.add('hidden'); }
+  function seleccionarTab(tab) {
+    document.getElementById('panel-texto').classList.toggle('hidden', tab !== 'texto');
+    document.getElementById('panel-archivo').classList.toggle('hidden', tab !== 'archivo');
+    document.getElementById('tab-texto').className = 'tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ' + (tab === 'texto' ? 'bg-white/10 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200');
+    document.getElementById('tab-archivo').className = 'tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ' + (tab === 'archivo' ? 'bg-white/10 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200');
+  }
+
+  async function ejecutarImportar() {
+    const resultado = document.getElementById('importar-resultado');
+    resultado.className = 'mt-4 p-4 rounded-xl text-sm font-medium border bg-white/5 border-white/10 text-zinc-300';
+    resultado.textContent = 'Procesando...';
+    resultado.classList.remove('hidden');
+
+    let r;
+    if (!document.getElementById('panel-archivo').classList.contains('hidden')) {
+      const fileInput = document.getElementById('importar-archivo');
+      if (!fileInput.files[0]) { resultado.textContent = 'Selecciona un archivo.'; return; }
+      const form = new FormData();
+      form.append('archivo', fileInput.files[0]);
+      r = await fetch('/api/staging/importar-archivo', { method: 'POST', body: form });
+    } else {
+      const texto = document.getElementById('importar-texto').value;
+      if (!texto.trim()) { resultado.textContent = 'Pega algo de contenido.'; return; }
+      r = await fetch('/api/staging/importar', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: texto });
+    }
+    const d = await r.json();
+    if (r.ok) {
+      if (d.fallos_validacion && d.fallos_validacion.length > 0 && d.agregados === 0) {
+        resultado.className = 'mt-4 p-4 rounded-xl text-sm font-medium border bg-rose-500/10 text-rose-400 border-rose-500/20';
+        resultado.innerHTML = '<div class="font-bold mb-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Errores al importar:</div><ul class="list-disc pl-5 max-h-40 overflow-y-auto text-xs space-y-1">' + d.fallos_validacion.map(e => '<li>' + e.replace(/</g, '&lt;') + '</li>').join('') + '</ul>';
+      } else {
+        resultado.className = 'mt-4 p-4 rounded-xl text-sm font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(52,211,153,0.1)]';
+        resultado.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Formato detectado: <b>' + d.formato_detectado + '</b>. Recibidos: ' + d.recibidos + ' · Agregados: ' + d.agregados + ' · Duplicados omitidos: ' + d.duplicados_omitidos;
+        if (d.fallos_validacion && d.fallos_validacion.length > 0) {
+            resultado.innerHTML += '<div class="mt-2 text-rose-400 text-xs">Hubo ' + d.fallos_validacion.length + ' errores ignorados.</div>';
+        }
+        setTimeout(() => { cerrarImportar(); location.reload(); }, 1500);
+      }
+    } else {
+      resultado.className = 'mt-4 p-4 rounded-xl text-sm font-medium border bg-rose-500/10 text-rose-400 border-rose-500/20';
+      resultado.textContent = 'Error: ' + JSON.stringify(d.detail || d);
+    }
+  }
+
+  async function abrirEditarJson(id) {
+    try {
+      const r = await fetch('/api/agentes/' + id);
+      if (!r.ok) throw new Error('Agente no encontrado');
+      const data = await r.json();
+      document.getElementById('json-agente-id').value = id;
+      document.getElementById('json-editor').value = JSON.stringify(data, null, 2);
+      document.getElementById('modal-editar-json').classList.remove('hidden');
+      document.getElementById('json-error').classList.add('hidden');
+    } catch(e) { alert(e.message); }
+  }
+
+  function cerrarEditarJson() {
+    document.getElementById('modal-editar-json').classList.add('hidden');
+  }
+
+  async function guardarJson() {
+    const id = document.getElementById('json-agente-id').value;
+    const txt = document.getElementById('json-editor').value;
+    const errDiv = document.getElementById('json-error');
+    let payload;
+    try {
+      payload = JSON.parse(txt);
+      errDiv.classList.add('hidden');
+    } catch(e) {
+      errDiv.textContent = 'JSON Inválido: ' + e.message;
+      errDiv.classList.remove('hidden');
+      return;
+    }
+
+    const r = await fetch('/api/staging/agente/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (r.ok) location.reload();
+    else {
+      const d = await r.json();
+      errDiv.textContent = 'Error de validación: ' + JSON.stringify(d);
+      errDiv.classList.remove('hidden');
+    }
+  }
+
+</script>
+{% endblock %}
